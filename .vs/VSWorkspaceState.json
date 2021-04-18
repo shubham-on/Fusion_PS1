@@ -3,14 +3,14 @@
     "",
     "\\FusionIIIT",
     "\\FusionIIIT\\applications",
-    "\\FusionIIIT\\applications\\academic_information",
     "\\FusionIIIT\\applications\\filetracking",
+    "\\FusionIIIT\\applications\\globals",
     "\\FusionIIIT\\applications\\ps1",
-    "\\FusionIIIT\\applications\\ps1\\migrations",
     "\\FusionIIIT\\templates",
+    "\\FusionIIIT\\templates\\dashboard",
     "\\FusionIIIT\\templates\\filetracking",
-    "\\FusionIIIT\\templates\\ps1"
+    "\\FusionIIIT\\templates\\filetracking1"
   ],
-  "SelectedNode": "\\FusionIIIT\\applications\\filetracking\\models.py",
+  "SelectedNode": "\\FusionIIIT\\applications\\ps1\\views.py",
   "PreviewInSolutionExplorer": false
 }

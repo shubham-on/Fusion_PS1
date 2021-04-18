@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from applications.filetracking.models import File, Tracking
+from applications.ps1.models import IndentFile
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -10,7 +11,6 @@ from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
 from notification.views import office_module_notif
-
 
 @login_required(login_url = "/accounts/login/")
 def ps1(request):
@@ -34,7 +34,173 @@ def ps1(request):
                 holdsdesignations - The HoldsDesignation object.
                 context - Holds data needed to make necessary changes in the template.
     """
-    return render(request, 'ps1/composeIndent.html')
+    if request.method =="POST":
+        try:
+            if 'save' in request.POST:
+                uploader = request.user.extrainfo
+                subject = request.POST.get('title')
+                description = request.POST.get('desc')
+                design = request.POST.get('design')
+                designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
+                upload_file = request.FILES.get('myfile')
+
+
+                item_name=request.POST.get('item_name')
+                quantity= request.POST.get('quantity')
+                present_stock=request.POST.get('present_stock')
+                estimated_cost=request.POST.get('estimated_cost')
+                purpose=request.POST.get('purpose')
+                specification=request.POST.get('specification')
+                indent_type=request.POST.get('indent_type')
+                nature=request.POST.get('nature')
+                indigenous=request.POST.get('indigenous')
+                replaced =request.POST.get('replaced')
+                budgetary_head=request.POST.get('budgetary_head')
+                expected_delivery=request.POST.get('expected_delivery')
+                sources_of_supply=request.POST.get('sources_of_supply')
+                head_approval=request.POST.get('head_approval')
+                director_approval=request.POST.get('director_approval')
+                financial_approval=request.POST.get('financial_approval')
+                purchased =request.POST.get('purchased')
+
+                File.objects.create(
+                    uploader=uploader,
+                    description=description,
+                    subject=subject,
+                    designation=designation,
+                    upload_file=upload_file
+                )
+
+                IndentFile.objects.create(
+                    file_info=1,
+                    item_name= item_name,
+                    quantity=quantity,      
+                    present_stock=present_stock,             
+                    estimated_cost=estimated_cost,
+                    purpose=purpose,
+                    specification=specification,
+                    indent_type=indent_type,
+                    nature=nature,
+                    indigenous=indigenous, 
+               #     replaced = replaced ,
+                    budgetary_head=budgetary_head,
+                    expected_delivery=expected_delivery,
+                    sources_of_supply=sources_of_supply,
+                    head_approval=head_approval,
+                    director_approval=director_approval,
+                    financial_approval=financial_approval,
+                 #   purchased =purchased,
+                )
+
+            if 'send' in request.POST:
+                uploader = request.user.extrainfo
+                subject = request.POST.get('title')
+                description = request.POST.get('desc')
+                design = request.POST.get('design')
+                designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
+
+                upload_file = request.FILES.get('myfile')
+
+                item_name=request.POST.get('item_name')
+                quantity= request.POST.get('quantity')
+                present_stock=request.POST.get('present_stock')
+                estimated_cost=request.POST.get('estimated_cost')
+                purpose=request.POST.get('purpose')
+                specification=request.POST.get('specification')
+                indent_type=request.POST.get('indent_type')
+                nature=request.POST.get('nature')
+                indigenous=request.POST.get('indigenous')
+                replaced =request.POST.get('replaced')
+                budgetary_head=request.POST.get('budgetary_head')
+                expected_delivery=request.POST.get('expected_delivery')
+                sources_of_supply=request.POST.get('sources_of_supply')
+                head_approval=request.POST.get('head_approval')
+                director_approval=request.POST.get('director_approval')
+                financial_approval=request.POST.get('financial_approval')
+                purchased =request.POST.get('purchased')
+
+                file = File.objects.create(
+                    uploader=uploader,
+                    description=description,
+                    subject=subject,
+                    designation=designation,
+                    upload_file=upload_file
+                )
+
+
+                IndentFile.objects.create(
+                    file_info=file,
+                    item_name= item_name,
+                    quantity=quantity,      
+                    present_stock=present_stock,             
+                    estimated_cost=estimated_cost,
+                    purpose=purpose,
+                    specification=specification,
+                    indent_type=indent_type,
+                    nature=nature,
+                    indigenous=indigenous, 
+                    replaced = replaced ,
+                    budgetary_head=budgetary_head,
+                    expected_delivery=expected_delivery,
+                    sources_of_supply=sources_of_supply,
+                    head_approval=head_approval,
+                    director_approval=director_approval,
+                    financial_approval=financial_approval,
+                 #   purchased =purchased,
+                )
+
+
+                current_id = request.user.extrainfo
+                remarks = request.POST.get('remarks')
+
+                sender = request.POST.get('design')
+                current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
+
+                receiver = request.POST.get('receiver')
+                try:
+                    receiver_id = User.objects.get(username=receiver)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid Username')
+                    return redirect('/filetracking/')
+                receive = request.POST.get('recieve')
+                try:
+                    receive_design = Designation.objects.get(name=receive)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid Designation')
+                    return redirect('/filetracking/')
+
+                upload_file = request.FILES.get('myfile')
+
+                Tracking.objects.create(
+                    file_id=file,
+                    current_id=current_id,
+                    current_design=current_design,
+                    receive_design=receive_design,
+                    receiver_id=receiver_id,
+                    remarks=remarks,
+                    upload_file=upload_file,
+                )
+                office_module_notif(request.user, receiver_id)
+                messages.success(request,'File sent successfully')
+
+        finally:
+            message = "FileID Already Taken.!!"
+            # return HttpResponse(message)
+
+
+
+    file = File.objects.select_related('uploader__user','uploader__department','designation').all()
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
+
+    context = {
+        'file': file,
+        'extrainfo': extrainfo,
+        'holdsdesignations': holdsdesignations,
+        'designations': designations,
+    }
+    return render(request, 'ps1/composeIndent.html', context)
 
 
 @login_required(login_url = "/accounts/login")
